@@ -5,6 +5,8 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.messages import HumanMessage, AIMessage
+import dotenv
+dotenv.load_dotenv()
 
 class GroqLLM:
     def __init__(self, user_contols_input):
@@ -42,48 +44,64 @@ class GroqLLM:
         if session_id in self.store:
             self.store[session_id] = ChatMessageHistory()
 
+    def debug_chat_history(self, session_id: str = None):
+        """Debug method to print chat history details."""
+        if session_id is None:
+            session_id = self.session_id
+
+        print(f"=== Debug Chat History for Session: {session_id} ===")
+        print(f"Available sessions: {list(self.store.keys())}")
+
+        if session_id in self.store:
+            history = self.store[session_id]
+            print(f"Number of messages: {len(history.messages)}")
+            for i, msg in enumerate(history.messages):
+                print(f"{i+1}. Type: {type(msg).__name__}, Content: {msg.content}")
+        else:
+            print(f"No history found for session: {session_id}")
+        print("=" * 50)
+
     def get_llm_model(self, session_id: str = None):
         """Get the LLM model with chat history support."""
         try:
             groq_api_key = self.user_controls_input["GROQ_API_KEY"]
             selected_groq_model = self.user_controls_input["selected_groq_model"]
-            
-            if groq_api_key == '' and os.environ["GROQ_API_KEY"] == '':
+
+            if groq_api_key == '' and os.environ.get("GROQ_API_KEY", "") == '':
                 st.error("Please Enter the Groq API KEY")
                 return None
-                
+
             llm = ChatGroq(api_key=groq_api_key, model=selected_groq_model)
-            
-            # Fix: Pass the function reference, not the function call result
-            llm = RunnableWithMessageHistory(llm, self.get_session_history)
-            
-            # Use provided session_id or default
-            if session_id is None:
-                session_id = self.session_id
-                
-            llm = llm.with_config(config={"configurable": {"session_id": session_id}})
-            
-            return llm
+
+            # Create RunnableWithMessageHistory with proper configuration
+            llm_with_history = RunnableWithMessageHistory(
+                llm,
+                self.get_session_history,
+            )
+
+            return llm_with_history
 
         except Exception as e:
             raise ValueError(f"Error Occurred With Exception: {e}")
 
-    def chat_with_history(self, message: str, session_id: str = None):
+    def chat_with_history(self, message: str = None, session_id: str = None):
         """Send a message and get response with automatic history management."""
         if session_id is None:
             session_id = self.session_id
-            
-        llm = self.get_llm_model(session_id)
-        
-        # Add user message to history
-        self.add_message_to_history(session_id, "user", message)
-        
-        # Get response from LLM (this will automatically include history)
-        response = llm.invoke(message)
-        
-        # Add assistant response to history
-        self.add_message_to_history(session_id, "assistant", response.content)
-        
+
+        # If no message provided, just return the configured LLM model
+        if message is None:
+            return self.get_llm_model()
+
+        llm_with_history = self.get_llm_model()
+
+        # Get response from LLM (RunnableWithMessageHistory will automatically manage history)
+        # For ChatGroq, we need to pass the message as a string directly
+        response = llm_with_history.invoke(
+            message,
+            config={"configurable": {"session_id": session_id}}
+        )
+
         return response.content
 
 if __name__ == "__main__":
