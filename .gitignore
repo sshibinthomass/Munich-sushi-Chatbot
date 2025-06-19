@@ -1,3 +1,5 @@
 venv/
 Documentation.ipynb
 .env
+quick_test.py
+new_test.py

@@ -67,6 +67,12 @@ class OpenAILLM:
         except Exception as e:
             raise ValueError(f"Error Occurred With Exception : {e}")
 
+    def get_base_llm(self):
+        """Return the base ChatOpenAI LLM instance (without history wrapper)."""
+        openai_api_key = self.user_controls_input.get("OPENAI_API_KEY", "")
+        selected_openai_model = self.user_controls_input.get("selected_openai_model", "gpt-3.5-turbo")
+        return ChatOpenAI(api_key=openai_api_key, model=selected_openai_model)
+
     def chat_with_history(self, message: str, session_id: str = None):
         """Send a message and get response with automatic history management."""
         if session_id is None:

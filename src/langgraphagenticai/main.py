@@ -1,8 +1,16 @@
 import streamlit as st
+import asyncio
+import json
 from src.langgraphagenticai.ui.streamlitui.loadui import LoadStreamlitUI
 from src.langgraphagenticai.LLMS.groqllm import GroqLLM
 from src.langgraphagenticai.LLMS.openAIllm import OpenAILLM
-from src.langgraphagenticai.LLMS.ollamallm import OllamaLLMWrapper
+from src.langgraphagenticai.graph.graph_builder import GraphBuilder
+from langchain_core.messages import HumanMessage, AIMessage
+
+def extract_content(val):
+    if isinstance(val, (HumanMessage, AIMessage)):
+        return val.content
+    return val
 
 def load_langgraph_agenticai_app():
     """
@@ -43,10 +51,11 @@ def load_langgraph_agenticai_app():
             ## Configure The LLM's with chat history support
             if current_llm == "Groq":
                 st.session_state['llm_config'] = GroqLLM(user_contols_input=user_input)
-            elif current_llm == "Ollama":
-                st.session_state['llm_config'] = OllamaLLMWrapper(user_controls_input=user_input)
+                base_llm = st.session_state['llm_config'].get_base_llm()
+
             elif current_llm == "OpenAI":
                 st.session_state['llm_config'] = OpenAILLM(user_controls_input=user_input)
+                base_llm = st.session_state['llm_config'].get_base_llm()
 
             # Store the current LLM type
             st.session_state['current_llm_type'] = current_llm
@@ -60,28 +69,88 @@ def load_langgraph_agenticai_app():
         except Exception as e:
             st.error(f"Error: LLM configuration failed- {e}")
             return
+    else:
+        test_model = st.session_state['llm_config'].get_llm_model(st.session_state['session_id'])
+        base_llm = st.session_state['llm_config'].get_base_llm()
 
     if user_message:
         try:
-            # Use the persistent LLM config object for chat with history
-            obj_llm_config = st.session_state['llm_config']
+            # Prepare the initial state with full chat history (for context)
+            system_prompt = """
+            You are a helpful and efficient sushi restaurant assistant. Your primary responsibilities include:
 
-            # Use chat_with_history method for context-aware responses
-            response = obj_llm_config.chat_with_history(user_message, st.session_state['session_id'])
+            Providing Menu Information:
 
-            # Append user message to streamlit chat history for display
+            Answer user questions about the available menu items in the sushi restaurant.
+            If specific menu information is not readily available, attempt to scrape the restaurant's website for the details and present them to the user.
+            Assisting with Parking:
+
+            Provide clear and concise parking details for the restaurant.
+            Taking and Managing Orders:
+
+            Take food orders from the user.
+            Save the confirmed order details to a file named order.json.
+            Order Confirmation and Communication:
+
+            Send an email to the user with their complete order details.
+            Restaurant Visit Assistance:
+
+            If the user expresses a desire to visit the restaurant, provide a Google Maps link to the restaurant's location.
+            Offer to add the visit to the user's calendar.
+            Constraint: If information is not explicitly provided in your knowledge base, you must attempt to scrape the restaurant's website to fulfill the user's request before stating that the information is unavailable.
+            
+            """
+            messages = [{"role": "system", "content": system_prompt}]
+            messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in st.session_state['chat_history']]
+            messages.append({"role": "user", "content": user_message})
+            initial_state = {"messages": messages}
+
+            # Initialize and set up the graph based on use case
+            usecase = user_input.get("selected_usecase")
+            if not usecase:
+                st.error("Error: No use case selected.")
+                return
+
+            graph_builder = GraphBuilder(base_llm)
+            graph = graph_builder.setup_graph(usecase)
+
+            # Run the graph (async, since RestaurantRecommendationNode is async)
+            result = asyncio.run(graph.ainvoke(initial_state, config={"configurable": {"session_id": st.session_state['session_id']}}))
+
+            # Get the assistant's reply robustly
+            assistant_reply = ""
+            if isinstance(result["messages"], list):
+                last_message = result["messages"][-1] if result["messages"] else ""
+                if isinstance(last_message, dict):
+                    assistant_reply = last_message.get("content", "")
+                else:
+                    assistant_reply = last_message
+            elif isinstance(result["messages"], dict):
+                assistant_reply = result["messages"].get("content", "")
+            else:
+                assistant_reply = result["messages"]
+
+            # Append user and assistant messages to chat history
             st.session_state['chat_history'].append({"role": "user", "content": user_message})
-            # Append assistant message to streamlit chat history for display
-            st.session_state['chat_history'].append({"role": "assistant", "content": response})
+            st.session_state['chat_history'].append({"role": "assistant", "content": assistant_reply})
 
         except Exception as e:
-             st.error(f"Error: Chat processing failed- {e}")
-             return
+            st.error(f"Error: Chat processing or graph execution failed - {e}")
+            return
 
     # Display the full chat history
+
     for msg in st.session_state['chat_history']:
         with st.chat_message(msg["role"]):
-            st.write(msg["content"])
+            content = msg["content"]
+            if isinstance(content, dict) and "content" in content:
+                st.write(content["content"])
+            elif isinstance(content, (HumanMessage, AIMessage)):
+                st.write(content.content)
+            elif isinstance(content, str):
+                st.write(content)
+            else:
+                st.write(str(content))
 
     # Add a button to clear chat history
     if st.sidebar.button("Clear Chat History"):

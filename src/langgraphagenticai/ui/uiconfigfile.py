@@ -3,7 +3,6 @@ from configparser import ConfigParser
 import requests
 import os
 import streamlit as st
-import ollama
 
 @st.cache_data(show_spinner="Loading Groq models...")
 def fetch_groq_model_options():
@@ -27,13 +26,9 @@ def fetch_groq_model_options():
     #else:
     #    print("Error:", response.status_code, response.text)
     #    return []
+    #deepseek-r1-distill-llama-70b
     return ["Gemma2-9b-It"]
-
-@st.cache_data(show_spinner="Loading Ollama models...")
-def fetch_ollama_model_options():
-    models = ollama.list()
-    model_names = [model['model'] for model in models['models']]
-    return model_names
+    #return ["llama-3.3-70b-versatile"]
 
 @st.cache_data(show_spinner="Loading OpenAI models...")
 def fetch_openai_model_options():
@@ -54,9 +49,6 @@ class Config:
 
     def get_groq_model_options(self):
         return fetch_groq_model_options()
-
-    def get_ollama_model_options(self):
-        return fetch_ollama_model_options()
 
     def get_openai_model_options(self):
         return fetch_openai_model_options()

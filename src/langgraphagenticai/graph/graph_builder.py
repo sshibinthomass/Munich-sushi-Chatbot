@@ -1,8 +1,10 @@
 from langgraph.graph import StateGraph
 from src.langgraphagenticai.state.state import State
 from langgraph.graph import START,END
-from src.langgraphagenticai.nodes.basic_chatbot_node import BasicChatbotNode
+from src.langgraphagenticai.nodes.basic_chatbot_node import BasicChatbotNode,RestaurantRecommendationNode
+import asyncio
 
+print("GraphBuilder")
 
 class GraphBuilder:
     def __init__(self,model):
@@ -21,12 +23,25 @@ class GraphBuilder:
         self.graph_builder.add_node("chatbot",self.basic_chatbot_node.process)
         self.graph_builder.add_edge(START,"chatbot")
         self.graph_builder.add_edge("chatbot",END)
+    
+    def chatbot_restaurant_recommendation(self):
+        """
+        Builds a chatbot graph for sushi recommendations.
+        """
+        self.restaurant_recommendation_node=RestaurantRecommendationNode(self.llm)
 
-    def setup_graph(self):
+        self.graph_builder.add_node("chatbot",self.restaurant_recommendation_node.process_sync)
+        self.graph_builder.add_edge(START,"chatbot")
+        self.graph_builder.add_edge("chatbot",END)
+
+    def setup_graph(self,usecase:str):
         """
         Sets up the graph for the selected use case.
         """
-
-        self.basic_chatbot_build_graph()
+        self.chatbot_restaurant_recommendation()
+        #if usecase == "Sushi":
+        #    self.chatbot_restaurant_recommendation()
+        #else:
+        #    self.basic_chatbot_build_graph()
 
         return self.graph_builder.compile()

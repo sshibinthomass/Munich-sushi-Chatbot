@@ -19,6 +19,7 @@ class LoadStreamlitUI:
         with st.sidebar: #This is the sidebar of the streamlit app
             # Get options from config
             llm_options = self.config.get_llm_options() #This is a list of LLM options from the config file
+            usecase_options = self.config.get_usecase_options() #This is a list of Usecase options from the config file
 
             # LLM selection
             self.user_controls["selected_llm"] = st.selectbox("Select LLM", llm_options)
@@ -35,10 +36,7 @@ class LoadStreamlitUI:
                 self.user_controls["selected_openai_model"] = st.selectbox("Select Model", model_options) #This is the OpenAI model selection
                 self.user_controls["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-            if self.user_controls["selected_llm"] == 'Ollama': #This is the Ollama model selection
-                # Model selection
-                model_options = self.config.get_ollama_model_options() #This is a list of Ollama model options from the config file
-                self.user_controls["selected_ollama_model"] = st.selectbox("Select Model", model_options) #This is the Ollama model selection
-                self.user_controls["OLLAMA_BASE_URL"] = os.getenv("OLLAMA_BASE_URL")
+            ## USecase selection
+            self.user_controls["selected_usecase"]=st.selectbox("Select Usecases",usecase_options) #This is the Usecase selection from the config file
 
         return self.user_controls

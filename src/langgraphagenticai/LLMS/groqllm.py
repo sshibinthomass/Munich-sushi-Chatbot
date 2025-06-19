@@ -44,23 +44,6 @@ class GroqLLM:
         if session_id in self.store:
             self.store[session_id] = ChatMessageHistory()
 
-    def debug_chat_history(self, session_id: str = None):
-        """Debug method to print chat history details."""
-        if session_id is None:
-            session_id = self.session_id
-
-        print(f"=== Debug Chat History for Session: {session_id} ===")
-        print(f"Available sessions: {list(self.store.keys())}")
-
-        if session_id in self.store:
-            history = self.store[session_id]
-            print(f"Number of messages: {len(history.messages)}")
-            for i, msg in enumerate(history.messages):
-                print(f"{i+1}. Type: {type(msg).__name__}, Content: {msg.content}")
-        else:
-            print(f"No history found for session: {session_id}")
-        print("=" * 50)
-
     def get_llm_model(self, session_id: str = None):
         """Get the LLM model with chat history support."""
         try:
@@ -103,6 +86,12 @@ class GroqLLM:
         )
 
         return response.content
+
+    def get_base_llm(self):
+        """Return the base ChatGroq LLM instance (without history wrapper)."""
+        groq_api_key = self.user_controls_input["GROQ_API_KEY"]
+        selected_groq_model = self.user_controls_input["selected_groq_model"]
+        return ChatGroq(api_key=groq_api_key, model=selected_groq_model)
 
 if __name__ == "__main__":
     # Example usage
