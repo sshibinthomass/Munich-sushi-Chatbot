@@ -27,8 +27,8 @@ def fetch_groq_model_options():
     #    print("Error:", response.status_code, response.text)
     #    return []
     #deepseek-r1-distill-llama-70b
-    return ["Gemma2-9b-It"]
-    #return ["llama-3.3-70b-versatile"]
+    #return ["Gemma2-9b-It"]
+    return ["llama-3.3-70b-versatile"]
 
 @st.cache_data(show_spinner="Loading OpenAI models...")
 def fetch_openai_model_options():
@@ -52,7 +52,4 @@ class Config:
 
     def get_openai_model_options(self):
         return fetch_openai_model_options()
-
-    def get_page_title(self):
-        return self.config["DEFAULT"].get("PAGE_TITLE")
     

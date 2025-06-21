@@ -2,9 +2,11 @@ from src.langgraphagenticai.state.state import State
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langchain_groq import ChatGroq
+from langchain_core.messages import AIMessage, HumanMessage
 import os
 from dotenv import load_dotenv
 import asyncio #asyncio is a library for asynchronous programming in Python.
+from langgraph.checkpoint.memory import InMemorySaver
 load_dotenv()
 
 class BasicChatbotNode:
@@ -19,6 +21,8 @@ class BasicChatbotNode:
         Processes the input state and generates a chatbot response.
         """
         response = self.llm.invoke(state['messages'])
+    
+    #Error handling for the response 
         # If response is an AIMessage, extract .content
         if hasattr(response, "content"):
             return {"messages": response.content}
@@ -56,7 +60,6 @@ class RestaurantRecommendationNode:
             os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
             tools=await client.get_tools()
             model=self.llm
-            from langgraph.checkpoint.memory import InMemorySaver
             checkpointer = InMemorySaver()
             agent=create_react_agent(
                 model, tools, checkpointer=checkpointer
@@ -67,8 +70,9 @@ class RestaurantRecommendationNode:
         except Exception as e:
             print(e)
             return {"messages": "Error: " + str(e)}
-        return {"messages":response['messages'][-1].content}
+        return {"messages": AIMessage(content=response['messages'][-1].content)}
     
+    #When called async directly from graph builter it gave error so added a sync function which calls the asyncio function
     def process_sync(self, state: State) -> dict:
         """
         Processes the input state and generates a chatbot response.

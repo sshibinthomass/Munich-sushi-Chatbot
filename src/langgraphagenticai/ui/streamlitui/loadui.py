@@ -13,8 +13,9 @@ class LoadStreamlitUI:
         self.user_controls={} #This is a dictionary to store the user controls
 
     def load_streamlit_ui(self):
-        st.set_page_config(page_title= "🤖 " + self.config.get_page_title(), layout="wide") #This is the title of the streamlit app
-        st.header("🤖 " + self.config.get_page_title()) #This is the header of the streamlit app from the config file
+        page_title="Chatbot Application"
+        st.set_page_config(page_title= page_title, layout="wide") #This is the title of the streamlit app
+        st.header(page_title) #This is the header of the streamlit app from the config file
 
         with st.sidebar: #This is the sidebar of the streamlit app
             # Get options from config

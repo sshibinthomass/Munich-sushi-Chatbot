@@ -4,7 +4,6 @@ from langgraph.graph import START,END
 from src.langgraphagenticai.nodes.basic_chatbot_node import BasicChatbotNode,RestaurantRecommendationNode
 import asyncio
 
-print("GraphBuilder")
 
 class GraphBuilder:
     def __init__(self,model):

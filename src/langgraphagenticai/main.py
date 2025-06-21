@@ -1,11 +1,11 @@
 import streamlit as st
 import asyncio
-import json
 from src.langgraphagenticai.ui.streamlitui.loadui import LoadStreamlitUI
 from src.langgraphagenticai.LLMS.groqllm import GroqLLM
 from src.langgraphagenticai.LLMS.openAIllm import OpenAILLM
 from src.langgraphagenticai.graph.graph_builder import GraphBuilder
 from langchain_core.messages import HumanMessage, AIMessage
+from src.langgraphagenticai.tools.return_prompt import return_prompt
 
 def extract_content(val):
     if isinstance(val, (HumanMessage, AIMessage)):
@@ -75,48 +75,28 @@ def load_langgraph_agenticai_app():
 
     if user_message:
         try:
-            # Prepare the initial state with full chat history (for context)
-            system_prompt = """
-            You are a helpful and efficient sushi restaurant assistant. Your primary responsibilities include:
-
-            Providing Menu Information:
-
-            Answer user questions about the available menu items in the sushi restaurant.
-            If specific menu information is not readily available, attempt to scrape the restaurant's website for the details and present them to the user.
-            Assisting with Parking:
-
-            Provide clear and concise parking details for the restaurant.
-            Taking and Managing Orders:
-
-            Take food orders from the user.
-            Save the confirmed order details to a file named order.json.
-            Order Confirmation and Communication:
-
-            Send an email to the user with their complete order details.
-            Restaurant Visit Assistance:
-
-            If the user expresses a desire to visit the restaurant, provide a Google Maps link to the restaurant's location.
-            Offer to add the visit to the user's calendar.
-            Constraint: If information is not explicitly provided in your knowledge base, you must attempt to scrape the restaurant's website to fulfill the user's request before stating that the information is unavailable.
-            
-            """
-            messages = [{"role": "system", "content": system_prompt}]
-            messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in st.session_state['chat_history']]
-            messages.append({"role": "user", "content": user_message})
-            initial_state = {"messages": messages}
-
             # Initialize and set up the graph based on use case
             usecase = user_input.get("selected_usecase")
             if not usecase:
                 st.error("Error: No use case selected.")
                 return
+            # Prepare the initial state with full chat history (for context)
+            system_prompt = return_prompt(usecase)
+            #Adding system prompt to the messages
+            messages = [{"role": "system", "content": system_prompt}]
+            #Adding previous responses from llm to the messages
+            messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in st.session_state['chat_history']]
+            #adding current user message to the messages
+            messages.append({"role": "user", "content": user_message})
+            #initial state is the messages
+            initial_state = {"messages": messages}
 
+            #Building the graph
             graph_builder = GraphBuilder(base_llm)
             graph = graph_builder.setup_graph(usecase)
 
             # Run the graph (async, since RestaurantRecommendationNode is async)
             result = asyncio.run(graph.ainvoke(initial_state, config={"configurable": {"session_id": st.session_state['session_id']}}))
-
             # Get the assistant's reply robustly
             assistant_reply = ""
             if isinstance(result["messages"], list):
@@ -129,7 +109,6 @@ def load_langgraph_agenticai_app():
                 assistant_reply = result["messages"].get("content", "")
             else:
                 assistant_reply = result["messages"]
-
             # Append user and assistant messages to chat history
             st.session_state['chat_history'].append({"role": "user", "content": user_message})
             st.session_state['chat_history'].append({"role": "assistant", "content": assistant_reply})
