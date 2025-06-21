@@ -85,9 +85,18 @@ def load_langgraph_agenticai_app():
             #Adding system prompt to the messages
             messages = [{"role": "system", "content": system_prompt}]
             #Adding previous responses from llm to the messages
-            messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in st.session_state['chat_history']]
+
+            # Add only the last 20 messages (or all if less than 20)
+            last_n_messages = st.session_state['chat_history'][-20:] if len(st.session_state['chat_history']) > int(ui.config.get_chat_history_length()) else st.session_state['chat_history']
+            messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in last_n_messages]
+
+            #messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in st.session_state['chat_history']]
             #adding current user message to the messages
+            if(len(messages) > int(ui.config.get_chat_history_length())):
+                messages.pop(1)
             messages.append({"role": "user", "content": user_message})
+
+
             #initial state is the messages
             initial_state = {"messages": messages}
 

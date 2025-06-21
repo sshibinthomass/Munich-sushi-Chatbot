@@ -6,7 +6,6 @@ from langchain_core.messages import AIMessage, HumanMessage
 import os
 from dotenv import load_dotenv
 import asyncio #asyncio is a library for asynchronous programming in Python.
-from langgraph.checkpoint.memory import InMemorySaver
 load_dotenv()
 
 class BasicChatbotNode:
@@ -47,22 +46,21 @@ class RestaurantRecommendationNode:
             #MultiServerMCPClient is a client that can connect to multiple MCP servers.
             client=MultiServerMCPClient( 
                 {
-                    "restaurant and review and Parking":{
-                        "url": "http://127.0.0.1:8000/mcp", 
+                    "restaurant":{
+                        "url": "http://127.0.0.1:8002/mcp", 
                         "transport": "streamable_http",
                     },
-                    # "OrderTool":{
-                    #     "url": "http://127.0.0.1:8001/mcp", 
-                    #     "transport": "streamable_http",
-                    # }
+                    "Parking":{
+                        "url": "http://127.0.0.1:8003/mcp", 
+                        "transport": "streamable_http",
+                    }
                 }
             )
             os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
             tools=await client.get_tools()
             model=self.llm
-            checkpointer = InMemorySaver()
             agent=create_react_agent(
-                model, tools, checkpointer=checkpointer
+                model, tools
             )
             response = await agent.ainvoke(
                 {"messages": state['messages']}

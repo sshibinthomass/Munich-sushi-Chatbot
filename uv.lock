@@ -1141,6 +1141,7 @@ dependencies = [
     { name = "langgraph" },
     { name = "langmem" },
     { name = "ollama" },
+    { name = "requests" },
     { name = "streamlit" },
     { name = "tavily-python" },
 ]
@@ -1166,6 +1167,7 @@ requires-dist = [
     { name = "langgraph", specifier = ">=0.4.8" },
     { name = "langmem", specifier = ">=0.0.27" },
     { name = "ollama", specifier = ">=0.5.1" },
+    { name = "requests", specifier = ">=2.32.4" },
     { name = "streamlit", specifier = ">=1.46.0" },
     { name = "tavily-python", specifier = ">=0.7.7" },
 ]

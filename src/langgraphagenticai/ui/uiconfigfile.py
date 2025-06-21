@@ -53,3 +53,6 @@ class Config:
     def get_openai_model_options(self):
         return fetch_openai_model_options()
     
+    def get_chat_history_length(self):
+        return self.config["DEFAULT"].get("CHAT_HISTORY_LENGTH")
+    

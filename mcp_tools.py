@@ -1,5 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 from src.langgraphagenticai.tools.google_map_review import get_reviews_for_restaurant
+from src.langgraphagenticai.tools.weather_info import get_weather_for_restaurant
+from src.langgraphagenticai.tools.google_map_review import get_place_details_by_id
 import json
 import requests
 from typing import List, Dict, Optional
@@ -34,7 +36,6 @@ def get_place_details(place_id: str) -> dict:
         dict: Detailed place information including reviews
     """
     try:
-        from src.langgraphagenticai.tools.google_map_review import get_place_details_by_id
         return get_place_details_by_id(place_id)
     except Exception as e:
         return {"error": str(e)}
@@ -66,7 +67,6 @@ def get_weather(restaurant_name: str) -> dict:
         Optional[Dict]: The weather for the given restaurant.
     """
     try:
-        from src.langgraphagenticai.tools.weather_info import get_weather_for_restaurant
         return get_weather_for_restaurant(restaurant_name)
     except Exception as e:
         return {"error": str(e)}

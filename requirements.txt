@@ -13,3 +13,4 @@ FastMCP
 langchain-mcp-adapters
 langmem
 googlemaps
+requests
