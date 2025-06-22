@@ -7,3 +7,5 @@ src/langgraphagenticai/tools/credentials.json
 src/langgraphagenticai/tools/token.json
 src/langgraphagenticai/tools/token.pickle
 test.txt
+chroma_openai/
+reports/

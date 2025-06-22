@@ -217,5 +217,6 @@ def get_restaurants_by_food_type(food_type: str) -> List[Dict]:
     except Exception as e:
         return [{"error": str(e)}]
 
+
 if __name__=="__main__":
     mcp.run(transport="streamable-http")

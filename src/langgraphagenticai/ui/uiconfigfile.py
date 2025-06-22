@@ -27,8 +27,8 @@ def fetch_groq_model_options():
     #    print("Error:", response.status_code, response.text)
     #    return []
     #deepseek-r1-distill-llama-70b
-    #return ["Gemma2-9b-It"]
-    return ["llama-3.3-70b-versatile"]
+    return ["Gemma2-9b-It"]
+    #return ["llama-3.3-70b-versatile"]
 
 @st.cache_data(show_spinner="Loading OpenAI models...")
 def fetch_openai_model_options():
@@ -55,4 +55,7 @@ class Config:
     
     def get_chat_history_length(self):
         return self.config["DEFAULT"].get("CHAT_HISTORY_LENGTH")
+    
+    def get_router_model(self):
+        return self.config["DEFAULT"].get("ROUTER_MODEL")
     

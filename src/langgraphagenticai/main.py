@@ -41,7 +41,7 @@ def load_langgraph_agenticai_app():
 
     # Initialize or get existing LLM config object to maintain chat history
     current_llm = user_input["selected_llm"]
-
+    print(user_message)
     # Check if we need to create a new LLM config (first time or LLM changed)
     if ('llm_config' not in st.session_state or
         'current_llm_type' not in st.session_state or
@@ -60,21 +60,17 @@ def load_langgraph_agenticai_app():
             # Store the current LLM type
             st.session_state['current_llm_type'] = current_llm
 
-            # Test if the model can be initialized
-            test_model = st.session_state['llm_config'].get_llm_model(st.session_state['session_id'])
-            if not test_model:
-                st.error("Error: LLM model could not be initialized")
-                return
+
 
         except Exception as e:
             st.error(f"Error: LLM configuration failed- {e}")
             return
     else:
-        test_model = st.session_state['llm_config'].get_llm_model(st.session_state['session_id'])
         base_llm = st.session_state['llm_config'].get_base_llm()
 
     if user_message:
         try:
+            
             # Initialize and set up the graph based on use case
             usecase = user_input.get("selected_usecase")
             if not usecase:
@@ -101,7 +97,7 @@ def load_langgraph_agenticai_app():
             initial_state = {"messages": messages}
 
             #Building the graph
-            graph_builder = GraphBuilder(base_llm)
+            graph_builder = GraphBuilder(model=base_llm,user_controls_input=user_input,message=user_message)
             graph = graph_builder.setup_graph(usecase)
 
             # Run the graph (async, since RestaurantRecommendationNode is async)
