@@ -1,11 +1,26 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
+import subprocess
+import sys
 load_dotenv()
 
 #Import the config file
 #from file location and name import class
 from src.langgraphagenticai.ui.uiconfigfile import Config
+
+def start_mcp_servers():
+    # Get absolute paths to the MCP tool scripts
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../tools'))
+    parking_script = os.path.join(base_dir, 'mcp_parking.py')
+    restaurant_script = os.path.join(base_dir, 'mcp_restaurant.py')
+
+    # Start both as background processes (creationflags for Windows, close_fds for Unix)
+    subprocess.Popen([sys.executable, parking_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen([sys.executable, restaurant_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+# Start MCP servers when Streamlit app starts
+start_mcp_servers()
 
 class LoadStreamlitUI:
     def __init__(self):

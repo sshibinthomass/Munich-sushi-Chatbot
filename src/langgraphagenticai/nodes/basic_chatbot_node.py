@@ -70,7 +70,7 @@ class RestaurantRecommendationNode:
             return {"messages": "No messages to process"}
         
         # Get the last message content
-        last_message = messages[-1]
+        last_message = messages[-2]
         if hasattr(last_message, 'content'):
             user_input = last_message.content
         elif isinstance(last_message, dict) and 'content' in last_message:
@@ -144,7 +144,7 @@ class RestaurantRecommendationNode:
             return {"messages": "No messages to process"}
         
         # Get the last message content
-        last_message = messages[-1]
+        last_message = messages[-2]
         if hasattr(last_message, 'content'):
             user_input = last_message.content
         elif isinstance(last_message, dict) and 'content' in last_message:
@@ -196,7 +196,8 @@ class RestaurantRecommendationNode:
             "is_duplicate": response.is_duplicate,
             "message_to_store": response.message_to_store,
         }
-        #print(result)
+        print(result)
+        print("--------------------------------")
         return result
 
     def evaluate_node(self, state: State) -> dict:
@@ -300,7 +301,7 @@ class RestaurantRecommendationNode:
             search_query = search_query_result["content"].strip()
         else:
             search_query = str(search_query_result).strip()
-        #print(search_query)
+        print("search_query-",search_query)
         # Now use the generated query for Tavily
         tavily_results = tavily.search(query=search_query).get('results', [])
 

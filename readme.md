@@ -17,29 +17,30 @@ cd <repo-directory>
 Create a `.env` file in your project root and add the following keys:
 
 ```ini
-# Hugging Face API Token
-HF_TOKEN=your_huggingface_token_here
-
-# LangChain API Key and Project
-LANGCHAIN_API_KEY=your_langchain_api_key_here
-LANGCHAIN_PROJECT=your_langchain_project_name_here
+# OpenAI API Key
+OPENAI_API_KEY=your_openai_api_key_here
 
 # Groq API Key
 GROQ_API_KEY=your_groq_api_key_here
 
-# OpenAI API Key
-OPENAI_API_KEY=your_openai_api_key_here
-
 # Tavily API Key
 TAVILY_API_KEY=your_tavily_api_key_here
+
+# Google Maps API Key
+GOOGLE_MAP_API=your_google_map_api_key_here
 ```
 
+### Purpose of Each API Key
+- **OPENAI_API_KEY**: Enables access to OpenAI's language models (e.g. GPT-4.1-mini) for chatbot responses.
+- **GROQ_API_KEY**: Enables access to Groq's LLMs for alternative or additional chatbot capabilities.
+- **TAVILY_API_KEY**: Used for web search and retrieval features via the Tavily API.
+- **GOOGLE_MAP_API**: Required for accessing Google Maps data, such as restaurant locations and reviews
+
 ### How to get these keys
-- **HF_TOKEN**: [Create a Hugging Face account](https://huggingface.co/join) and get your token from [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
-- **LANGCHAIN_API_KEY & LANGCHAIN_PROJECT**: [Sign up for LangChain](https://www.langchain.com/) and get your API key and project name from your LangChain dashboard.
+- **OPENAI_API_KEY**: [Sign up for OpenAI](https://platform.openai.com/signup) and create an API key at [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 - **GROQ_API_KEY**: [Sign up for Groq](https://console.groq.com/keys) and generate an API key.
-- **OPENAI_API_KEY**: [Sign up for OpenAI](https://platform.openai.com/signup) and create an API key at [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys). Use this key to access OpenAI models (e.g., GPT-3.5, GPT-4, etc.).
 - **TAVILY_API_KEY**: [Sign up for Tavily](https://app.tavily.com/) and get your API key from your account settings.
+- **GOOGLE_MAP_API**: [Create a Google Cloud account](https://console.cloud.google.com/), enable the Maps API, and generate an API key from the [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 
 After creating your `.env` file, the application will automatically load these variables at startup.
 
@@ -47,10 +48,16 @@ After creating your `.env` file, the application will automatically load these v
 
 ## 3. Install UV and Project Dependencies
 
+### Install UV (if not already installed)
+If you do not have UV installed, run:
+```sh
+pip install uv
+```
+
 ### 3.1 Install [UV](https://github.com/astral-sh/uv) (if not already installed)
 UV is a fast Python package manager. Install it by following the [official instructions](https://github.com/astral-sh/uv#installation).
 
-### 3.2 Initialize UV in the project directory
+### 3.2 Initialize UV in the project director (if not already initialized)
 ```sh
 uv init
 ```
@@ -76,13 +83,6 @@ uv add -r requirements.txt
 ```
 This will install all required packages listed in `requirements.txt` using UV.
 
-### 3.6 Install Node.js Dependencies
-Some features require Node.js packages. Install them globally using npm:
-
-```sh
-npm install -g @cablate/mcp-google-map
-```
-
 ---
 
 ## 4. Run the Streamlit App
@@ -97,10 +97,32 @@ This will launch the app in your default web browser. Make sure your virtual env
 
 ---
 
-## Summary of Steps
-1. Clone/download the repository
-2. Set up your `.env` file with required keys
-3. Install UV and dependencies, create and activate your virtual environment
-4. Run the Streamlit app
+## 5. UI Configuration: `uiconfigfile.ini`
 
-Follow these steps in order for a smooth setup and usage experience.
+The `uiconfigfile.ini` file controls the options available in the Streamlit UI, such as which LLMs, models, use cases, and chat history length are available for selection.
+
+- **Location:** `src/langgraphagenticai/ui/uiconfigfile.ini`
+- **Purpose:** Customize the dropdown options in the sidebar of the Streamlit app.
+- **What you can configure:**
+  - Available LLM providers (e.g., OpenAI, Groq)
+  - Model options for each provider
+  - Use case options
+  - Chat history length (number of messages retained)
+
+**Example `uiconfigfile.ini`:**
+```ini
+[DEFAULT]
+PAGE_TITLE = Chatbot
+LLM_OPTIONS = OpenAI, Groq
+GROQ_MODEL_OPTIONS = qwen-qwq-32b, qwen/qwen3-32b, llama-3.1-8b-instant, llama-3.3-70b-versatile
+OPENAI_MODEL_OPTIONS = gpt-4.1-mini
+USECASE_OPTIONS = Sushi, Agentic AI, Basic Chatbot
+CHAT_HISTORY_LENGTH = 20
+```
+
+**How to use:**
+- Edit this file to add or remove LLMs, models, or use cases as needed.
+- Adjust `CHAT_HISTORY_LENGTH` to control how much conversation context is retained.
+- Changes will be reflected in the Streamlit UI the next time you start or refresh the app.
+
+---
