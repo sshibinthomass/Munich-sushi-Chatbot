@@ -8,8 +8,10 @@ faiss-cpu
 streamlit
 tavily-python
 langchain_openai
+jq>=1.7
 FastMCP
 langchain-mcp-adapters
+langmem
 googlemaps
 requests
 protobuf==3.20.3

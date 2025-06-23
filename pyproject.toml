@@ -23,6 +23,7 @@ dependencies = [
     "langchain-ollama>=0.3.3",
     "langchain-openai>=0.3.24",
     "langgraph>=0.4.8",
+    "langgraph-cli[inmem]>=0.3.3",
     "langmem>=0.0.27",
     "ollama>=0.5.1",
     "protobuf==3.20.3",

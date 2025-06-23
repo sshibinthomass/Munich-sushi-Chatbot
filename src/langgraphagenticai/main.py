@@ -41,7 +41,7 @@ def load_langgraph_agenticai_app():
 
     # Initialize or get existing LLM config object to maintain chat history
     current_llm = user_input["selected_llm"]
-    print(user_message)
+    #print(user_message)
     # Check if we need to create a new LLM config (first time or LLM changed)
     if ('llm_config' not in st.session_state or
         'current_llm_type' not in st.session_state or
