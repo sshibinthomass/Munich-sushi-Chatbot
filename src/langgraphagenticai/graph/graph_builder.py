@@ -2,9 +2,6 @@ from langgraph.graph import StateGraph
 from src.langgraphagenticai.state.state import State
 from langgraph.graph import START,END
 from src.langgraphagenticai.nodes.basic_chatbot_node import BasicChatbotNode,RestaurantRecommendationNode
-from src.langgraphagenticai.nodes.assistant_chatbot_node import AgenticAIChatbotNode
-from src.langgraphagenticai.LLMS.routerLLM import Router
-from src.langgraphagenticai.nodes.assistant_chatbot_node import AgenticAIChatbotNode
 import asyncio
 from dotenv import load_dotenv
 load_dotenv()
@@ -32,77 +29,48 @@ class GraphBuilder:
     
     def chatbot_restaurant_recommendation(self):
         """
-        Builds a chatbot graph for sushi recommendations.
+        Builds a chatbot graph for sushi recommendations with evaluation-based routing.
         """
-        self.restaurant_recommendation_node=RestaurantRecommendationNode(self.llm)
+        self.restaurant_recommendation_node = RestaurantRecommendationNode(self.llm)
 
-        self.graph_builder.add_node("chatbot",self.restaurant_recommendation_node.process_sync)
-        self.graph_builder.add_node("store_node",self.restaurant_recommendation_node.store_node)
-        self.graph_builder.add_edge(START,"chatbot")
-        self.graph_builder.add_edge("chatbot","store_node")
-        self.graph_builder.add_edge("chatbot",END)
+        self.graph_builder.add_node("restaurant_node", self.restaurant_recommendation_node.restaurant_node_sync)
+        self.graph_builder.add_edge(START, "restaurant_node")
+        self.graph_builder.add_edge("restaurant_node", END)
+        
 
     def assistant_chatbot_build_graph(self):
         """
         Builds a assistant chatbot graph using LangGraph.
         """
-        self.restaurant_recommendation_node=RestaurantRecommendationNode(self.llm)
-        self.agentic_ai_chatbot_node=AgenticAIChatbotNode(self.llm)
-        self.router_llm = Router(user_controls_input=self.user_controls_input, message=self.message)
+        self.restaurant_recommendation_node = RestaurantRecommendationNode(self.llm)
 
-        self.graph_builder.add_node("agent_node",self.agentic_ai_chatbot_node.agent_node)
-        self.graph_builder.add_node("chat_node",self.restaurant_recommendation_node.process)
-        self.graph_builder.add_node("store_node",self.agentic_ai_chatbot_node.store_node)
-        self.graph_builder.add_node("retrieve_node",self.agentic_ai_chatbot_node.retrieve_node)
-        self.graph_builder.add_node("email_node",self.agentic_ai_chatbot_node.email_node)
-        self.graph_builder.add_node("calender_node",self.agentic_ai_chatbot_node.calender_node)
+        self.graph_builder.add_node("chatbot", self.restaurant_recommendation_node.process_sync)
+        self.graph_builder.add_node("evaluate_node", self.restaurant_recommendation_node.evaluate_node)
+        self.graph_builder.add_node("store_node", self.restaurant_recommendation_node.store_node)
+        self.graph_builder.add_node("search_node", self.restaurant_recommendation_node.search_node)
 
-        # Define routing function (this is the key fix)
-        def route_to_node(state):
-            """Route to appropriate node based on router decision"""
-            try:
-                # Get router decision
-                router_result = self.router_llm.router_change_step(self.user_controls_input)
-                
-                # Map router output to node names
-                if router_result == "email_node":
-                    return "email_node"
-                elif router_result == "calender_node":
-                    return "calender_node"
-                elif router_result == "store_node":
-                    return "store_node"
-                elif router_result == "chat_node":
-                    return "chat_node"
-                elif router_result == "agenticAI":
-                    return "agent_node"  # Loop back to agent for complex requests
-                else:
-                    return "chat_node"  # Default fallback
-            except Exception as e:
-                print(f"Router error: {e}")
-                return "chat_node"  # Default fallback
+        self.graph_builder.add_edge(START, "chatbot")
+        self.graph_builder.add_edge("chatbot", "evaluate_node")
 
-
-        self.graph_builder.add_edge(START,"agent_node")
+        # Conditional routing based on evaluate_node's result
+        def route_after_evaluate(state):
+            # The evaluate_node returns {"result": True} or {"result": False}
+            result = state.get("result", False)
+            if result:
+                return "store_node"
+            else:
+                return "search_node"
 
         self.graph_builder.add_conditional_edges(
-            "agent_node",
-            route_to_node,
+            "evaluate_node",
+            route_after_evaluate,
             {
-                "chat_node": "chat_node",
-                "store": "store_node",
-                "retrieve": "retrieve_node",
-                "email": "email_node",
-                "calender": "calender_node"
+                "store_node": "store_node",
+                "search_node": "search_node"
             }
         )
-
-        self.graph_builder.add_edge("chat_node","agent_node")
-        self.graph_builder.add_edge("store_node","agent_node")
-        self.graph_builder.add_edge("retrieve_node","agent_node")
-        self.graph_builder.add_edge("email_node","agent_node")
-        self.graph_builder.add_edge("calender_node","agent_node")
-        self.graph_builder.add_edge("agent_node",END)
-        self.graph_builder.add_edge("chat_node",END)
+        self.graph_builder.add_edge("search_node", "store_node")
+        self.graph_builder.add_edge("store_node", END)
 
 
     def setup_graph(self,usecase:str):

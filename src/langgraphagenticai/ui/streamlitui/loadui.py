@@ -38,7 +38,6 @@ class LoadStreamlitUI:
                 self.user_controls["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
             ## USecase selection
-            self.user_controls["selected_router_model"]=self.config.get_router_model()
             self.user_controls["selected_usecase"]=st.selectbox("Select Usecases",usecase_options) #This is the Usecase selection from the config file
 
         return self.user_controls
