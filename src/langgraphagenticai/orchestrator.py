@@ -8,6 +8,7 @@ from pydantic import BaseModel,Field
 from langchain_core.messages import HumanMessage,SystemMessage
 from typing_extensions import TypedDict
 from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langgraph.constants import Send
 from typing import Annotated, TypedDict
@@ -20,6 +21,7 @@ from langgraph.prebuilt import create_react_agent
 os.environ["OPENAI_API_KEY"]=os.getenv("OPENAI_API_KEY")
 os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
 os.environ["TAVILY_API_KEY"]=os.getenv("TAVILY_API_KEY")
+os.environ["GEMINI_API_KEY"]=os.getenv("GEMINI_API_KEY")
 
 #llm=ChatOpenAI(model="gpt-4.1-mini")
 #llm=ChatGroq(model="llama-3.3-70b-versatile")

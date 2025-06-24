@@ -20,7 +20,7 @@ class OpenAILLM:
 
 
     def get_base_llm(self):
-        """Return the base ChatOpenAI LLM instance (without history wrapper)."""
+        """Return the base ChatOpenAI LLM instance """
         openai_api_key = self.user_controls_input.get("OPENAI_API_KEY", "")
         selected_openai_model = self.user_controls_input.get("selected_openai_model", "gpt-4.1-mini")
         return ChatOpenAI(api_key=openai_api_key, model=selected_openai_model)

@@ -1,6 +1,7 @@
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
@@ -22,6 +23,7 @@ sys.path.append(str(project_root))
 from src.langgraphagenticai.state.state import State
 load_dotenv()
 os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
+os.environ["GEMINI_API_KEY"]=os.getenv("GEMINI_API_KEY")
 
 class StorageDecision(BaseModel):
     should_store: bool = Field(description="Whether to store the information - true or false")
@@ -152,12 +154,8 @@ class RestaurantRecommendationNode:
         else:
             user_input = str(last_message)
         embedding=OpenAIEmbeddings()
-        # db = Chroma(persist_directory="./chroma_db", embedding_function=embedding)
-        # docs=db.similarity_search(user_input)
-        # retrieved_info = "\n".join([f"Document: {doc.page_content}" for doc in docs])
         
         retrieved_info=self.retrieve_node(state)
-        #print(retrieved_info['retrieved_info'])
         # Single LLM call to make all decisions
         llm_with_structured = self.llm.with_structured_output(StorageDecision)
         response = llm_with_structured.invoke([

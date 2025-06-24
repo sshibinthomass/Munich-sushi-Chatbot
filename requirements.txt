@@ -13,3 +13,6 @@ googlemaps
 requests
 protobuf==3.20.3
 ipykernel
+langchain_google_genai
+setuptools
+langchain_ollama

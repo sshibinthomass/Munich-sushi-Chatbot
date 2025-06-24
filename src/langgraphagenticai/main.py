@@ -2,6 +2,8 @@ import streamlit as st
 import asyncio
 from src.langgraphagenticai.ui.streamlitui.loadui import LoadStreamlitUI
 from src.langgraphagenticai.LLMS.groqllm import GroqLLM
+from src.langgraphagenticai.LLMS.ollamallm import OllamaLLM
+from src.langgraphagenticai.LLMS.geminillm import GeminiLLM
 from src.langgraphagenticai.LLMS.openAIllm import OpenAILLM
 from src.langgraphagenticai.graph.graph_builder import GraphBuilder
 from langchain_core.messages import HumanMessage, AIMessage
@@ -57,6 +59,14 @@ def load_langgraph_agenticai_app():
                 st.session_state['llm_config'] = OpenAILLM(user_controls_input=user_input)
                 base_llm = st.session_state['llm_config'].get_base_llm()
 
+            elif current_llm == "Gemini":
+                st.session_state['llm_config'] = GeminiLLM(user_controls_input=user_input)
+                base_llm = st.session_state['llm_config'].get_base_llm()
+
+            elif current_llm == "Ollama":
+                st.session_state['llm_config'] = OllamaLLM(user_controls_input=user_input)
+                base_llm = st.session_state['llm_config'].get_base_llm()
+
             # Store the current LLM type
             st.session_state['current_llm_type'] = current_llm
 
@@ -70,7 +80,7 @@ def load_langgraph_agenticai_app():
 
     if user_message:
         try:
-            
+            #History
             # Initialize and set up the graph based on use case
             usecase = user_input.get("selected_usecase")
             if not usecase:
@@ -83,10 +93,9 @@ def load_langgraph_agenticai_app():
             #Adding previous responses from llm to the messages
 
             # Add only the last 20 messages (or all if less than 20)
-            last_n_messages = st.session_state['chat_history'][-20:] if len(st.session_state['chat_history']) > int(ui.config.get_chat_history_length()) else st.session_state['chat_history']
+            last_n_messages = st.session_state['chat_history'][-int(ui.config.get_chat_history_length()):] if len(st.session_state['chat_history']) > int(ui.config.get_chat_history_length()) else st.session_state['chat_history']
             messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in last_n_messages]
 
-            #messages += [{"role": msg["role"], "content": extract_content(msg["content"])} for msg in st.session_state['chat_history']]
             #adding current user message to the messages
             if(len(messages) > int(ui.config.get_chat_history_length())):
                 messages.pop(1)

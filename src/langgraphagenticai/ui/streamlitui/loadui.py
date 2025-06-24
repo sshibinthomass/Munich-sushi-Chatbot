@@ -28,7 +28,7 @@ class LoadStreamlitUI:
         self.user_controls={} #This is a dictionary to store the user controls
 
     def load_streamlit_ui(self):
-        page_title="Chatbot Application"
+        page_title=self.config.get_page_title()
         st.set_page_config(page_title= page_title, layout="wide") #This is the title of the streamlit app
         st.header(page_title) #This is the header of the streamlit app from the config file
 
@@ -51,6 +51,18 @@ class LoadStreamlitUI:
                 model_options = self.config.get_openai_model_options() #This is a list of OpenAI model options from the config file
                 self.user_controls["selected_openai_model"] = st.selectbox("Select Model", model_options) #This is the OpenAI model selection
                 self.user_controls["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
+            if self.user_controls["selected_llm"] == 'Gemini': #This is the Gemini model selection
+                # Model selection
+                model_options = self.config.get_gemini_model_options() #This is a list of Gemini model options from the config file
+                self.user_controls["selected_gemini_model"] = st.selectbox("Select Model", model_options) #This is the Gemini model selection
+                self.user_controls["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY")
+
+            if self.user_controls["selected_llm"] == 'Ollama': #This is the Ollama model selection
+                # Model selection
+                model_options = self.config.get_ollama_model_options() #This is a list of Ollama model options from the config file
+                self.user_controls["selected_ollama_model"] = st.selectbox("Select Model", model_options) #This is the Ollama model selection
+                self.user_controls["OLLAMA_API_KEY"] = os.getenv("OLLAMA_API_KEY")
 
             ## USecase selection
             self.user_controls["selected_usecase"]=st.selectbox("Select Usecases",usecase_options) #This is the Usecase selection from the config file
