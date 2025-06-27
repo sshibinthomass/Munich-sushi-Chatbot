@@ -36,6 +36,3 @@ class Config:
     def get_ollama_model_options(self):
         return self.config["DEFAULT"].get("OLLAMA_MODEL_OPTIONS").split(", ")
     
-    def get_gemini_model_options(self):
-        return self.config["DEFAULT"].get("GEMINI_MODEL_OPTIONS").split(", ")
-    
