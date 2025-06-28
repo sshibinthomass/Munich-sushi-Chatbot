@@ -6,7 +6,7 @@ The Munich Sushi Chatbot is an AI-powered agent designed to assist users in disc
 
 ---
 
-## Features
+## Feature
 
 ### 1. Sushi Restaurant Discovery
 - **Restaurant Listings:** Provides a curated list of sushi restaurants in Munich, including names, addresses, cuisine types, and price levels.
